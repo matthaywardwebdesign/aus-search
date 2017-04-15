@@ -108,10 +108,12 @@ simplifyAndStoreLocality = (db, smallData, callback) => {
     console.log( 'Started simplyifying locality' );
     const stream = db.collection( 'locality' ).find({}).stream();
     let count = 0;
+    let remaining = 0;
     stream.on('error', function (err) {
       console.error(err);
     });
     stream.on('data', function (doc) {
+      remaining++;
       /* Process each document */
       const l = new Locality();
       l.setID( doc.locality_pid );
@@ -124,10 +126,9 @@ simplifyAndStoreLocality = (db, smallData, callback) => {
       /* Get the location for this locality */
       getLocationLocality( db, l.id, location => {
         l.setLocation( location );
-
-        console.log( l );
-
+        newCollection.insert( l );
         count++;
+        remaining--;
         if ( count % 500 === 0 ) {
           process.stdout.clearLine();
           process.stdout.cursorTo(0);
@@ -136,8 +137,13 @@ simplifyAndStoreLocality = (db, smallData, callback) => {
       });
     });
     stream.on('end', function () {
-      console.log( `${count >= 500 ? '\n' : ''}Finished simplifying locality` );
-      callback();
+      const timer = setInterval(() => {
+        if ( remaining == 0 ) {
+          clearInterval( timer );
+          console.log( `${count >= 500 ? '\n' : ''}Finished simplifying locality` );
+          callback();
+        }
+      }, 100);
     });
   });
 }
