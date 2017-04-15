@@ -4,6 +4,8 @@ const async = require('async');
 const State = require('./models/State.js');
 const LocalityClass = require('./models/LocalityClass.js');
 const StreetType = require('./models/StreetType.js');
+const Locality = require('./models/Locality.js');
+const Location = require('./models/Location.js');
 
 /* Let's simplify the dataset */
 db( db => {
@@ -11,7 +13,9 @@ db( db => {
     /* Now that we have the small data let's store the simple states in the database */
     storeSimpleStates( db, smallData.states, () => {
       /* Now it's time to go through all of the other data and process it */
-      db.close();
+      simplifyAndStoreLocality( db, smallData, () => {
+        db.close();
+      });
     });
   });
 });
@@ -98,6 +102,57 @@ simplifyStreetTypes = types => {
   });
 }
 
-simplifyAndStoreLocality = (db, callback) => {
-  const stream = db.collection( 'locality' ).find({});
+simplifyAndStoreLocality = (db, smallData, callback) => {
+  const newCollection = db.collection( 'LocalitySimple' );
+  newCollection.deleteMany({}, (err, response) => {
+    console.log( 'Started simplyifying locality' );
+    const stream = db.collection( 'locality' ).find({}).stream();
+    let count = 0;
+    stream.on('error', function (err) {
+      console.error(err);
+    });
+    stream.on('data', function (doc) {
+      /* Process each document */
+      const l = new Locality();
+      l.setID( doc.locality_pid );
+      l.setDateCreated( doc.date_created );
+      l.setDateRetired( doc.date_retired );
+      l.setName( doc.locality_name );
+      l.setClassCode( smallData.localityTypes.find( t => t.id === doc.locality_class_code ));
+      l.setState( smallData.states.find( s => s.id === doc.state_pid ));
+
+      /* Get the location for this locality */
+      getLocationLocality( db, l.id, location => {
+        l.setLocation( location );
+
+        console.log( l );
+
+        count++;
+        if ( count % 500 === 0 ) {
+          process.stdout.clearLine();
+          process.stdout.cursorTo(0);
+          process.stdout.write( `${count} records processed` );
+        }
+      });
+    });
+    stream.on('end', function () {
+      console.log( `${count >= 500 ? '\n' : ''}Finished simplifying locality` );
+      callback();
+    });
+  });
+}
+
+getLocationLocality = (db, id, callback) => {
+  const collection = db.collection( 'localityLatLng' );
+  collection.findOne({ locality_pid: id}, (err, doc) => {
+    if ( !doc ) {
+      callback(null);
+      return;
+    }
+
+    const l = new Location();
+    l.setLat( doc.latitude );
+    l.setLng( doc.longitude );
+    callback(l);
+  });
 }
