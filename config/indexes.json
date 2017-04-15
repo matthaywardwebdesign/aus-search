@@ -1,0 +1,9 @@
+[
+  {
+    "name": "postcode",
+    "collection": "victoriaAddressDetail",
+    "fields": {
+      "postcode": 1
+    }
+  }
+]

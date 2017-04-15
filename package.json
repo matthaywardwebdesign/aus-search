@@ -1,0 +1,19 @@
+{
+  "name": "aus-address-search",
+  "version": "1.0.0",
+  "description": "",
+  "main": "import.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "import": "node import.js"
+  },
+  "author": "Matt Hayward",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "async": "^2.3.0",
+    "csv-stream": "^0.1.3",
+    "indian-ocean": "^2.0.2",
+    "mongodb": "^2.2.25",
+    "underscore": "^1.8.3"
+  }
+}
