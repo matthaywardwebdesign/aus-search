@@ -2,79 +2,86 @@
   {
     "collection": "localityClass",
     "file": "data/Authority_Code_LOCALITY_CLASS_AUT_psv.psv",
-    "enabled": true
+    "enabled": false
   },
   {
     "collection": "addressType",
     "file": "data/Authority_Code_ADDRESS_TYPE_AUT_psv.psv",
-    "enabled": true
+    "enabled": false
   },
   {
     "collection": "geocodeType",
     "file": "data/Authority_Code_GEOCODE_TYPE_AUT_psv.psv",
-    "enabled": true
+    "enabled": false
   },
   {
     "collection": "flatType",
     "file": "data/Authority_Code_FLAT_TYPE_AUT_psv.psv",
-    "enabled": true
+    "enabled": false
   },
   {
     "collection": "streetType",
     "file": "data/Authority_Code_STREET_TYPE_AUT_psv.psv",
-    "enabled": true
+    "enabled": false
   },
   {
     "collection": "streetClass",
     "file": "data/Authority_Code_STREET_CLASS_AUT_psv.psv",
-    "enabled": true
+    "enabled": false
   },
   {
     "collection": "locality",
     "files": [
       "data/VIC_LOCALITY_psv.psv"
     ],
-    "enabled": true
+    "enabled": false
   },
   {
     "collection": "localityLatLng",
     "files": [
       "data/VIC_LOCALITY_POINT_psv.psv"
     ],
-    "enabled": true
+    "enabled": false
   },
   {
     "collection": "localityNeighbour",
     "files": [
       "data/VIC_LOCALITY_NEIGHBOUR_psv.psv"
     ],
-    "enabled": true
+    "enabled": false
   },
   {
     "collection": "addressSite",
     "files": [
       "data/VIC_ADDRESS_SITE_psv.psv"
     ],
-    "enabled": true
+    "enabled": false
   },
   {
     "collection": "addressDetail",
     "files": [
       "data/VIC_ADDRESS_DETAIL_psv.psv"
     ],
-    "enabled": true
+    "enabled": false
   },
   {
     "collection": "streetLocality",
     "files": [
       "data/VIC_STREET_LOCALITY_psv.psv"
     ],
-    "enabled": true
+    "enabled": false
   },
   {
     "collection": "state",
     "files": [
       "data/VIC_STATE_psv.psv"
+    ],
+    "enabled": false
+  },
+  {
+    "collection": "addressGeocode",
+    "files": [
+      "data/VIC_ADDRESS_DEFAULT_GEOCODE_psv.psv"
     ],
     "enabled": true
   }

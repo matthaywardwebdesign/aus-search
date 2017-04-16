@@ -3,3 +3,8 @@ mongo:
   ports:
     - "27017:27017"
   restart: always
+
+elasticsearch:
+  image: bitnami/elasticsearch:latest
+  ports:
+    - "9200:9200"

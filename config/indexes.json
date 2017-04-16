@@ -1,9 +1,37 @@
 [
   {
-    "name": "postcode",
-    "collection": "victoriaAddressDetail",
+    "name": "streetID",
+    "collection": "StreetSimple",
     "fields": {
-      "postcode": 1
+      "id": 1
+    }
+  },
+  {
+    "name": "localityID",
+    "collection": "LocalitySimple",
+    "fields": {
+      "id": 1
+    }
+  },
+  {
+    "name": "localityLatLngID",
+    "collection": "localityLatLng",
+    "fields": {
+      "locality_pid": 1
+    }
+  },
+  {
+    "name": "addressSiteID",
+    "collection": "addressSite",
+    "fields": {
+      "address_site_pid": 1
+    }
+  },
+  {
+    "name": "addressGeocode",
+    "collection": "addressGeocode",
+    "fields": {
+      "address_detail_pid": 1
     }
   }
 ]
