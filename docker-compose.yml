@@ -8,3 +8,5 @@ elasticsearch:
   image: bitnami/elasticsearch:latest
   ports:
     - "9200:9200"
+  volumes:
+    - ./elasticsearch-data:/bitnami/elasticsearch
