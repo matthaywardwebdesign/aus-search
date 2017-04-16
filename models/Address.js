@@ -81,7 +81,7 @@ class Address {
   createFormattedAddress() {
     const building = ( this.buildingName ) ? `${this.buildingName} ` : '';
     const flat = ( this.flat ) ? `${this.flat}/` : '';
-    const number = ( this.numberLast ) ? `${this.numberFirst} ${this.numberLast}` : this.numberFirst;
+    const number = ( this.numberLast ) ? `${this.numberFirst} - ${this.numberLast}` : this.numberFirst;
     const street = `${this.street.name} ${this.street.type ? this.street.type.name : ''}`;
     const locality = this.locality.name;
     const state = this.locality.state.abbreviation;
