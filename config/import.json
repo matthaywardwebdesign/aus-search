@@ -32,56 +32,120 @@
   {
     "collection": "locality",
     "files": [
-      "data/VIC_LOCALITY_psv.psv"
+      "data/VIC_LOCALITY_psv.psv",
+      "data/ACT_LOCALITY_psv.psv",
+      "data/NSW_LOCALITY_psv.psv",
+      "data/NT_LOCALITY_psv.psv",
+      "data/OT_LOCALITY_psv.psv",
+      "data/QLD_LOCALITY_psv.psv",
+      "data/SA_LOCALITY_psv.psv",
+      "data/TAS_LOCALITY_psv.psv",
+      "data/WA_LOCALITY_psv.psv"
     ],
     "enabled": true
   },
   {
     "collection": "localityLatLng",
     "files": [
-      "data/VIC_LOCALITY_POINT_psv.psv"
+      "data/VIC_LOCALITY_POINT_psv.psv",
+      "data/ACT_LOCALITY_POINT_psv.psv",
+      "data/NSW_LOCALITY_POINT_psv.psv",
+      "data/NT_LOCALITY_POINT_psv.psv",
+      "data/OT_LOCALITY_POINT_psv.psv",
+      "data/QLD_LOCALITY_POINT_psv.psv",
+      "data/SA_LOCALITY_POINT_psv.psv",
+      "data/TAS_LOCALITY_POINT_psv.psv",
+      "data/WA_LOCALITY_POINT_psv.psv"
     ],
     "enabled": true
   },
   {
     "collection": "localityNeighbour",
     "files": [
-      "data/VIC_LOCALITY_NEIGHBOUR_psv.psv"
+      "data/VIC_LOCALITY_NEIGHBOUR_psv.psv",
+      "data/ACT_LOCALITY_NEIGHBOUR_psv.psv",
+      "data/NSW_LOCALITY_NEIGHBOUR_psv.psv",
+      "data/NT_LOCALITY_NEIGHBOUR_psv.psv",
+      "data/OT_LOCALITY_NEIGHBOUR_psv.psv",
+      "data/QLD_LOCALITY_NEIGHBOUR_psv.psv",
+      "data/SA_LOCALITY_NEIGHBOUR_psv.psv",
+      "data/TAS_LOCALITY_NEIGHBOUR_psv.psv",
+      "data/WA_LOCALITY_NEIGHBOUR_psv.psv"
     ],
     "enabled": true
   },
   {
     "collection": "addressSite",
     "files": [
-      "data/VIC_ADDRESS_SITE_psv.psv"
+      "data/VIC_ADDRESS_SITE_psv.psv",
+      "data/ACT_ADDRESS_SITE_psv.psv",
+      "data/NSW_ADDRESS_SITE_psv.psv",
+      "data/NT_ADDRESS_SITE_psv.psv",
+      "data/OT_ADDRESS_SITE_psv.psv",
+      "data/QLD_ADDRESS_SITE_psv.psv",
+      "data/SA_ADDRESS_SITE_psv.psv",
+      "data/TAS_ADDRESS_SITE_psv.psv",
+      "data/WA_ADDRESS_SITE_psv.psv"
     ],
     "enabled": true
   },
   {
     "collection": "addressDetail",
     "files": [
-      "data/VIC_ADDRESS_DETAIL_psv.psv"
+      "data/VIC_ADDRESS_DETAIL_psv.psv",
+      "data/ACT_ADDRESS_DETAIL_psv.psv",
+      "data/NSW_ADDRESS_DETAIL_psv.psv",
+      "data/NT_ADDRESS_DETAIL_psv.psv",
+      "data/OT_ADDRESS_DETAIL_psv.psv",
+      "data/QLD_ADDRESS_DETAIL_psv.psv",
+      "data/SA_ADDRESS_DETAIL_psv.psv",
+      "data/TAS_ADDRESS_DETAIL_psv.psv",
+      "data/WA_ADDRESS_DETAIL_psv.psv"
     ],
     "enabled": true
   },
   {
     "collection": "streetLocality",
     "files": [
-      "data/VIC_STREET_LOCALITY_psv.psv"
+      "data/VIC_STREET_LOCALITY_psv.psv",
+      "data/ACT_STREET_LOCALITY_psv.psv",
+      "data/NSW_STREET_LOCALITY_psv.psv",
+      "data/NT_STREET_LOCALITY_psv.psv",
+      "data/OT_STREET_LOCALITY_psv.psv",
+      "data/QLD_STREET_LOCALITY_psv.psv",
+      "data/SA_STREET_LOCALITY_psv.psv",
+      "data/TAS_STREET_LOCALITY_psv.psv",
+      "data/WA_STREET_LOCALITY_psv.psv"
     ],
     "enabled": true
   },
   {
     "collection": "state",
     "files": [
-      "data/VIC_STATE_psv.psv"
+      "data/VIC_STATE_psv.psv",
+      "data/ACT_STATE_psv.psv",
+      "data/NSW_STATE_psv.psv",
+      "data/NT_STATE_psv.psv",
+      "data/OT_STATE_psv.psv",
+      "data/SA_STATE_psv.psv",
+      "data/TAS_STATE_psv.psv",
+      "data/WA_STATE_psv.psv",
+      "data/QLD_STATE_psv.psv"
     ],
     "enabled": true
   },
   {
     "collection": "addressGeocode",
     "files": [
-      "data/VIC_ADDRESS_DEFAULT_GEOCODE_psv.psv"
+      "data/VIC_ADDRESS_DEFAULT_GEOCODE_psv.psv",
+      "data/ACT_ADDRESS_DEFAULT_GEOCODE_psv.psv",
+      "data/NSW_ADDRESS_DEFAULT_GEOCODE_psv.psv",
+      "data/NT_ADDRESS_DEFAULT_GEOCODE_psv.psv",
+      "data/OT_ADDRESS_DEFAULT_GEOCODE_psv.psv",
+      "data/SA_ADDRESS_DEFAULT_GEOCODE_psv.psv",
+      "data/TAS_ADDRESS_DEFAULT_GEOCODE_psv.psv",
+      "data/WA_ADDRESS_DEFAULT_GEOCODE_psv.psv",
+      "data/QLD_ADDRESS_DEFAULT_GEOCODE_psv.psv"
     ],
     "enabled": true
   }
