@@ -2,81 +2,81 @@
   {
     "collection": "localityClass",
     "file": "data/Authority_Code_LOCALITY_CLASS_AUT_psv.psv",
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "addressType",
     "file": "data/Authority_Code_ADDRESS_TYPE_AUT_psv.psv",
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "geocodeType",
     "file": "data/Authority_Code_GEOCODE_TYPE_AUT_psv.psv",
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "flatType",
     "file": "data/Authority_Code_FLAT_TYPE_AUT_psv.psv",
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "streetType",
     "file": "data/Authority_Code_STREET_TYPE_AUT_psv.psv",
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "streetClass",
     "file": "data/Authority_Code_STREET_CLASS_AUT_psv.psv",
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "locality",
     "files": [
       "data/VIC_LOCALITY_psv.psv"
     ],
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "localityLatLng",
     "files": [
       "data/VIC_LOCALITY_POINT_psv.psv"
     ],
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "localityNeighbour",
     "files": [
       "data/VIC_LOCALITY_NEIGHBOUR_psv.psv"
     ],
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "addressSite",
     "files": [
       "data/VIC_ADDRESS_SITE_psv.psv"
     ],
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "addressDetail",
     "files": [
       "data/VIC_ADDRESS_DETAIL_psv.psv"
     ],
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "streetLocality",
     "files": [
       "data/VIC_STREET_LOCALITY_psv.psv"
     ],
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "state",
     "files": [
       "data/VIC_STATE_psv.psv"
     ],
-    "enabled": false
+    "enabled": true
   },
   {
     "collection": "addressGeocode",
