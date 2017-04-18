@@ -1,3 +1,4 @@
+/* This function converts a string into it's title case form, for example MCDONALDS would become McDonalds */
 module.exports = str => {
   return str.toLowerCase()
   .split(" ")

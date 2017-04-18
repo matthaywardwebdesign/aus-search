@@ -2,3 +2,4 @@ data/*
 !data/*.md
 node_modules/
 .DS_Store
+elasticsearch-data/

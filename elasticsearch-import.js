@@ -7,8 +7,17 @@ const client = new elasticsearch.Client({
 db( db => {
   const cursor = db.collection( 'AddressSimple' ).find({});
   getNext( cursor, () => {
-    console.log( 'Completed' );
-    db.close();
+    /* Check to see if there is any more left in the batch */
+    if ( batch.length > 0 ) {
+      insertDocs( batch, () => {
+        batch = [];
+        console.log( 'Completed' );
+        db.close();
+      });
+    } else {
+      console.log( 'Completed' );
+      db.close();
+    }
   });
 });
 
