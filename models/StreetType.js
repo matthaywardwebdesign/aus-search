@@ -1,11 +1,18 @@
 const titleCase = require('../utils/titleCase.js');
 
 class StreetType {
-  constructor() {
+  constructor( doc ) {
     this.id = "";
     this.name = "";
     this.description = "";
     this.longName = "";
+
+    if ( doc ) {
+      this.id = doc.code;
+      this.longName = titleCase( this.id );
+      this.name = doc.name;
+      this.description = doc.description;
+    }
   }
 
   setID( id ) {

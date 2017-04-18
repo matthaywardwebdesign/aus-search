@@ -1,5 +1,5 @@
 class Locality {
-  constructor() {
+  constructor( doc ) {
     this.id = "";
     this.dateCreated = null;
     this.dateRetired = null;
@@ -7,6 +7,13 @@ class Locality {
     this.classCode = null;
     this.state = null;
     this.location = null;
+
+    if ( doc ) {
+      this.id = doc.locality_pid;
+      this.dateCreated = doc.date_created;
+      this.dateRetired = doc.date_retired;
+      this.name = doc.locality_name;
+    }
   }
 
   setID( id ) {

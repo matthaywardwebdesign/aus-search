@@ -1,10 +1,18 @@
 class State {
-  constructor() {
+  constructor( doc ) {
     this.id = "";
     this.dateCreated = null;
     this.dateRetired = null;
     this.name = "";
     this.abbreviation = "";
+
+    if ( doc ) {
+      this.id = doc.state_pid;
+      this.dateCreated = doc.date_created;
+      this.dateRetired = doc.date_retired;
+      this.name = doc.state_name;
+      this.abbreviation = doc.state_abbreviation;
+    }
   }
 
   setID( id ) {

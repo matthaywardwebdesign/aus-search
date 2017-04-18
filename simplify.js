@@ -1,6 +1,10 @@
-const db = require('./utils/db.js');
-const indexes = require('./config/indexes.json');
+/* Import dependencies */
 const async = require('async');
+const database = require('./utils/db.js');
+const Batch = require('./lib/Batch.js');
+const Simplifier = require('./lib/Simplifier.js');
+
+/* Import all the models */
 const State = require('./models/State.js');
 const LocalityClass = require('./models/LocalityClass.js');
 const StreetType = require('./models/StreetType.js');
@@ -11,17 +15,27 @@ const FlatType = require('./models/FlatType.js');
 const Address = require('./models/Address.js');
 const AddressType = require('./models/AddressType.js');
 
-/* Let's simplify the dataset */
-db( db => {
-  getSmallData( db, smallData => {
+/* Create a variable to store the database connection */
+let db = null;
+
+/* Create a variable to store the small data that can be fetched all at once */
+let smallData = null;
+
+/* Attempt to get a database connection */
+database( database => {
+  db = database;
+  /* Retrieve the small data that doesn't need to be processed one item at a time like states and data types */
+  getSmallData( data => {
+    smallData = data;
     /* Now that we have the small data let's store the simple states in the database */
-    storeSimpleStates( db, smallData.states, () => {
+    storeDataInCollection( 'StateSimple', smallData.states, () => {
       /* Now it's time to go through all of the other data and process it */
-      simplifyAndStoreLocality( db, smallData, () => {
-        simplifyAndStoreStreet( db, smallData, () => {
-          simplifyAndStoreAddress( db, smallData, () => {
+      simplifyAndStoreLocality(() => {
+        simplifyAndStoreStreet(() => {
+          //simplifyAndStoreAddress(() => {
+            /* We are all done, let's close the database connection */
             db.close();
-          });
+          //});
         });
       });
     });
@@ -29,241 +43,96 @@ db( db => {
 });
 
 /* This function goes off and fetches all the small bits of data we will need to reference when processing the larger tables */
-getSmallData = (db, callback) => {
+getSmallData = callback => {
+  /* Go off and fetch the data in parallel */
   async.parallel([
-    callback => getSimplifiedStates(db, callback),
-    callback => getSimplifiedLocalityClasses(db, callback),
-    callback => getSimplifiedStreetTypes(db, callback),
-    callback => getSimplifiedFlatTypes(db, callback),
-    callback => getSimplifiedAddressTypes(db, callback),
+    callback => getResolvedDocument( 'state', State, callback),
+    callback => getResolvedDocument( 'localityClass', LocalityClass, callback),
+    callback => getResolvedDocument( 'streetType', StreetType, callback),
+    callback => getResolvedDocument( 'flatType', FlatType, callback),
+    callback => getResolvedDocument( 'addressType', AddressType, callback),
   ], ( err, results ) => {
-    const data = {};
-    data.states = results[0];
-    data.localityTypes = results[1];
-    data.streetTypes = results[2];
-    data.flatTypes = results[3];
-    data.addressTypes = results[4];
+    /* Now that we have results, let's collate the data and return it via the callback */
+    const data = {
+      states: results[0],
+      localityTypes: results[1],
+      streetTypes: results[2],
+      flatTypes: results[3],
+      addressTypes: results[4],
+    };
     callback( data );
   });
 }
 
-/* This function returns the states in a simplied JSON format */
-getSimplifiedStates = (db, callback) => {
-  db.collection( 'state' ).find({}).toArray((err, response) => {
-    const states = simplifyStates( response );
-    callback( err, states );
-  });
-}
+/* This function stores the provided data in the specified collection */
+storeDataInCollection = ( collectionName, data, callback ) => {
+  /* Get the collection */
+  const collection = db.collection( collectionName );
 
-/* Converts the database entries into simplified State objects */
-simplifyStates = states => {
-  return states.map( state => {
-    const s = new State();
-    s.setID(state.state_pid);
-    s.setDateCreated(state.date_created);
-    s.setDateRetired(state.date_retired);
-    s.setName(state.state_name);
-    s.setAbbreviation(state.state_abbreviation);
-    return s;
-  });
-}
-
-storeSimpleStates = ( db, states, callback ) => {
-  const collection = db.collection( 'StateSimple' );
+  /* Delete any existing items */
   collection.deleteMany({}, (err, response) => {
-    collection.insert( states, () => {
+    /* Insert the new items */
+    collection.insert( data, {
+      ordered: false,
+    }, () => {
       callback();
     });
   });
 }
 
-/* This function returns the locality types in a simplied JSON format */
-getSimplifiedLocalityClasses = (db, callback) => {
-  db.collection( 'localityClass' ).find({}).toArray((err, response) => {
-    const types = simplifyLocalityClasses( response );
+/* This function converts all the documents in a specified collection to the specified model */
+getResolvedDocument = ( collection, objectType, callback ) => {
+  db.collection( collection ).find({}).toArray((err, response) => {
+    const types = response.map( doc => new objectType( doc ));
     callback( err, types );
   });
 }
 
-/* Converts the database entries into simplified LocalityClass objects */
-simplifyLocalityClasses = types => {
-  return types.map ( type => {
-    const t = new LocalityClass();
-    t.setID(type.code);
-    t.setName(type.name);
-    return t;
-  });
-}
+simplifyAndStoreLocality = callback => {
+  const simplifier = new Simplifier( 'locality', 'LocalitySimple', ( doc, resolved ) => {
+    /* Create a new Locality object from the document */
+    const l = new Locality( doc );
 
-/* This function returns the street types in a simplied JSON format */
-getSimplifiedStreetTypes = (db, callback) => {
-  db.collection( 'streetType' ).find({}).toArray((err, response) => {
-    const types = simplifyStreetTypes( response );
-    callback( err, types );
-  });
-}
+    /* Pull any data required from smallData */
+    l.setClassCode( smallData.localityTypes.find( t => t.id === doc.locality_class_code ));
+    l.setState( smallData.states.find( s => s.id === doc.state_pid ));
 
-/* Converts the database entries into simplified StreetType objects */
-simplifyStreetTypes = types => {
-  return types.map ( type => {
-    const t = new StreetType();
-    t.setID(type.code);
-    t.setName(type.name);
-    t.setDescription(type.description);
-    return t;
-  });
-}
+    /* Fetch the location for this locality from the database */
+    getLocationLocality( l.id, location => {
+      /* Store the fetched location in the locality */
+      l.setLocation( location );
 
-/* This function returns the flat types in a simplied JSON format */
-getSimplifiedFlatTypes = (db, callback) => {
-  db.collection( 'flatType' ).find({}).toArray((err, response) => {
-    const types = simplifyFlatTypes( response );
-    callback( err, types );
-  });
-}
-
-/* Converts the database entries into simplified StreetType objects */
-simplifyFlatTypes = types => {
-  return types.map ( type => {
-    const t = new FlatType();
-    t.setID(type.code);
-    t.setName(type.name);
-    t.setDescription(type.description);
-    return t;
-  });
-}
-
-/* This function returns the flat types in a simplied JSON format */
-getSimplifiedAddressTypes = (db, callback) => {
-  db.collection( 'addressType' ).find({}).toArray((err, response) => {
-    const types = simplifyAddressTypes( response );
-    callback( err, types );
-  });
-}
-
-/* Converts the database entries into simplified StreetType objects */
-simplifyAddressTypes = types => {
-  return types.map ( type => {
-    const t = new AddressType();
-    t.setID(type.code);
-    t.setName(type.name);
-    t.setDescription(type.description);
-    return t;
-  });
-}
-
-simplifyAndStoreLocality = (db, smallData, callback) => {
-  const newCollection = db.collection( 'LocalitySimple' );
-  newCollection.deleteMany({}, (err, response) => {
-    console.log( 'Started simplyifying locality' );
-    const stream = db.collection( 'locality' ).find({}).stream();
-    let count = 0;
-    let remaining = 0;
-    stream.on('error', function (err) {
-      console.error(err);
+      /* Return the item */
+      resolved( l );
     });
-    stream.on('data', function (doc) {
-      remaining++;
-      /* Process each document */
-      const l = new Locality();
-      l.setID( doc.locality_pid );
-      l.setDateCreated( doc.date_created );
-      l.setDateRetired( doc.date_retired );
-      l.setName( doc.locality_name );
-      l.setClassCode( smallData.localityTypes.find( t => t.id === doc.locality_class_code ));
-      l.setState( smallData.states.find( s => s.id === doc.state_pid ));
+  }, callback);
 
-      /* Get the location for this locality */
-      getLocationLocality( db, l.id, location => {
-        l.setLocation( location );
-        newCollection.insert( l, () => {
-          count++;
-          remaining--;
-          if ( count % 500 === 0 ) {
-            process.stdout.clearLine();
-            process.stdout.cursorTo(0);
-            process.stdout.write( `${count} records processed` );
-          }
-        });
-      });
-    });
-    stream.on('end', function () {
-      const timer = setInterval(() => {
-        if ( remaining == 0 ) {
-          clearInterval( timer );
-          console.log( `${count >= 500 ? '\n' : ''}Finished simplifying locality` );
-          callback();
-        }
-      }, 100);
-    });
-  });
+  simplifier.setDatabase( db );
+  simplifier.run();
 }
 
-getLocationLocality = (db, id, callback) => {
-  const collection = db.collection( 'localityLatLng' );
-  collection.findOne({ locality_pid: id}, (err, doc) => {
-    if ( !doc ) {
-      callback(null);
-      return;
-    }
+simplifyAndStoreStreet = callback => {
+  const simplifier = new Simplifier( 'streetLocality', 'StreetSimple', ( doc, resolved ) => {
+    /* Create a new Street object from the document */
+    const s = new Street( doc );
 
-    const l = new Location();
-    l.setLat( doc.latitude );
-    l.setLng( doc.longitude );
-    callback(l);
-  });
-}
+    /* Pull any data required from smallData */
+    s.setType( smallData.streetTypes.find( t => t.id === doc.street_type_code ));
 
-simplifyAndStoreStreet = (db, smallData, callback) => {
-  const newCollection = db.collection( 'StreetSimple' );
-  newCollection.deleteMany({}, (err, response) => {
-    console.log( 'Started simplyifying streets' );
-    const stream = db.collection( 'streetLocality' ).find({}).stream();
-    let count = 0;
-    let remaining = 0;
-    stream.on('error', function (err) {
-      console.error(err);
+    /* Get the locality for this street */
+    getLocality( doc.locality_pid, locality => {
+      s.setLocality( locality );
+      resolved( s );
     });
-    stream.on('data', function (doc) {
-      remaining++;
-      /* Process each document */
-      const s = new Street();
-      s.setID( doc.street_locality_pid );
-      s.setDateCreated( doc.date_created );
-      s.setDateRetired( doc.date_retired );
-      s.setConfirmed( doc.street_class_code === 'C' );
-      s.setName( doc.street_name );
-      s.setType( smallData.streetTypes.find( t => t.id === doc.street_type_code ));
+  }, callback);
 
-      /* Get the location for this locality */
-      getLocality( db, doc.locality_pid, locality => {
-        s.setLocality( locality );
-        newCollection.insert( s, () => {
-          count++;
-          remaining--;
-          if ( count % 500 === 0 ) {
-            process.stdout.clearLine();
-            process.stdout.cursorTo(0);
-            process.stdout.write( `${count} records processed` );
-          }
-        });
-      });
-    });
-    stream.on('end', function () {
-      const timer = setInterval(() => {
-        if ( remaining == 0 ) {
-          clearInterval( timer );
-          console.log( `${count >= 500 ? '\n' : ''}Finished simplifying streets` );
-          callback();
-        }
-      }, 100);
-    });
-  });
+  simplifier.setDatabase( db );
+  simplifier.run();
 }
 
 const localityCache = {};
 
-getLocality = (db, id, callback) => {
+getLocality = ( id, callback ) => {
   if ( !localityCache[id] ) {
     const collection = db.collection( 'LocalitySimple' );
     collection.findOne({ id }, (err, doc) => {
@@ -279,7 +148,7 @@ getLocality = (db, id, callback) => {
   }
 }
 
-simplifyAndStoreAddress = (db, smallData, callback) => {
+simplifyAndStoreAddress = callback => {
   const newCollection = db.collection( 'AddressSimple' );
   newCollection.deleteMany({}, (err, response) => {
     console.log( 'Started simplyifying addresses' );
@@ -306,17 +175,17 @@ simplifyAndStoreAddress = (db, smallData, callback) => {
       a.setPostcode(doc.postcode);
 
       /* Get the location for this locality */
-      getStreet( db, doc.street_locality_pid, street => {
+      getStreet( doc.street_locality_pid, street => {
         a.setStreet( street );
         if ( street ) {
           a.setLocality( street.locality );
         }
         a.createFormattedAddress();
-        getAddressSite( db, doc.address_site_pid, site => {
+        getAddressSite( doc.address_site_pid, site => {
           if ( site != null ) {
             a.setAddressType(smallData.addressTypes.find( t => t.id === site.address_type ));
           }
-          getAddressLocation( db, doc.address_detail_pid, location => {
+          getAddressLocation( doc.address_detail_pid, location => {
             a.setLocation( location );
             newCollection.insert( a, () => {
               count++;
@@ -343,9 +212,22 @@ simplifyAndStoreAddress = (db, smallData, callback) => {
   });
 }
 
+/* Returns a location locality from ID */
+getLocationLocality = ( id, callback ) => {
+  const collection = db.collection( 'localityLatLng' );
+  collection.findOne({ locality_pid: id}, (err, doc) => {
+    if ( !doc ) {
+      callback(null);
+      return;
+    }
+
+    callback( new Location( doc ));
+  });
+}
+
 const streetCache = {};
 
-getStreet = (db, id, callback) => {
+getStreet = ( id, callback) => {
   if ( !streetCache[id] ) {
     const collection = db.collection( 'StreetSimple' );
     collection.findOne({ id }, (err, doc) => {
@@ -361,7 +243,7 @@ getStreet = (db, id, callback) => {
   }
 }
 
-getAddressSite = (db, id, callback) => {
+getAddressSite = ( id, callback) => {
   const collection = db.collection( 'addressSite' );
   collection.findOne({ address_site_pid: id }, (err, doc) => {
     if ( !doc ) {
@@ -373,7 +255,7 @@ getAddressSite = (db, id, callback) => {
   });
 }
 
-getAddressLocation = (db, id, callback) => {
+getAddressLocation = ( id, callback) => {
   const collection = db.collection( 'addressGeocode' );
   collection.findOne({ address_detail_pid: id }, (err, doc) => {
     if ( !doc ) {

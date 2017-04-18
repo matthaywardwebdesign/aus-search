@@ -1,7 +1,12 @@
 class Location {
-  constructor() {
+  constructor( doc ) {
     this.lat = null;
     this.lng = null;
+
+    if ( doc ) {
+      this.lat = doc.latitude;
+      this.lng = doc.longitude;
+    }
   }
 
   setLat( lat ) {

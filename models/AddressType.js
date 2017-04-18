@@ -1,8 +1,14 @@
 class AddressType {
-  constructor() {
+  constructor( doc ) {
     this.id = "";
     this.name = "";
     this.description = "";
+
+    if ( doc ) {
+      this.id = doc.code;
+      this.name = doc.name;
+      this.description = doc.description;
+    }
   }
 
   setID( id ) {
