@@ -32,10 +32,10 @@ database( database => {
       /* Now it's time to go through all of the other data and process it */
       simplifyAndStoreLocality(() => {
         simplifyAndStoreStreet(() => {
-          //simplifyAndStoreAddress(() => {
+          simplifyAndStoreAddress(() => {
             /* We are all done, let's close the database connection */
             db.close();
-          //});
+          });
         });
       });
     });
@@ -130,111 +130,107 @@ simplifyAndStoreStreet = callback => {
   simplifier.run();
 }
 
+simplifyAndStoreAddress = callback => {
+  const simplifier = new Simplifier( 'addressDetail', 'AddressSimple', ( doc, resolved ) => {
+    /* Create a new Address object from the document */
+    const a = new Address( doc );
+
+    /* Pull any data required from smallData */
+    a.setFlatType( smallData.flatTypes.find( t => t.id === doc.flat_type_code ));
+
+    /* Get the street for this address */
+    getStreet( doc.street_locality_pid, street => {
+      a.setStreet( street );
+
+      /* Create the formatted address */
+      a.createFormattedAddress();
+
+      /* Get the address site */
+      getAddressSite( doc.address_site_pid, site => {
+        if ( site != null ) {
+          a.setAddressType( smallData.addressTypes.find( t => t.id === site.address_type ));
+        }
+
+        /* Get the location for the address */
+        getAddressLocation( doc.address_detail_pid, location => {
+          a.setLocation( location );
+          resolved( a );
+        });
+      });
+    });
+  }, callback);
+
+  simplifier.setDatabase( db );
+  simplifier.run();
+}
+
+/* Create a simple in memory cache for localities */
 const localityCache = {};
 
 getLocality = ( id, callback ) => {
+  /* Check if the locality doesn't already exist in the cache */
   if ( !localityCache[id] ) {
+    /* Find the locality in the collection */
     const collection = db.collection( 'LocalitySimple' );
     collection.findOne({ id }, (err, doc) => {
+      /* If no document was found, return null */
       if ( !doc ) {
         callback(null);
         return;
       }
+
+      /* Store the locality in the cache and return the document */
       localityCache[id] = doc;
       callback(doc);
     });
   } else {
+    /* Locality is in the cache, return it */
     callback( localityCache[id] );
   }
 }
 
-simplifyAndStoreAddress = callback => {
-  const newCollection = db.collection( 'AddressSimple' );
-  newCollection.deleteMany({}, (err, response) => {
-    console.log( 'Started simplyifying addresses' );
-    const stream = db.collection( 'addressDetail' ).find({}).stream();
-    let count = 0;
-    let remaining = 0;
-    stream.on('error', function (err) {
-      console.error(err);
-    });
-    stream.on('data', function (doc) {
-      remaining++;
-      /* Process each document */
-      const a = new Address();
-      a.setID(doc.address_detail_pid);
-      a.setDateCreated(doc.date_created);
-      a.setDateRetired(doc.date_retired);
-      a.setBuildingName(doc.building_name);
-      a.setLot(`${doc.lot_number_prefix}${doc.lot_number}${doc.lot_number_suffix}`);
-      a.setFlat(`${doc.flat_number_prefix}${doc.flat_number}${doc.flat_number_suffix}`);
-      a.setFlatType(smallData.flatTypes.find( t => t.id === doc.flat_type_code ));
-      a.setLevel(`${doc.level_number_prefix}${doc.level_number}${doc.level_number_suffix}`);
-      a.setNumberFirst(`${doc.number_first_prefix}${doc.number_first}${doc.number_first_suffix}`);
-      a.setNumberLast(`${doc.number_last_prefix}${doc.number_last}${doc.number_last_suffix}`);
-      a.setPostcode(doc.postcode);
-
-      /* Get the location for this locality */
-      getStreet( doc.street_locality_pid, street => {
-        a.setStreet( street );
-        if ( street ) {
-          a.setLocality( street.locality );
-        }
-        a.createFormattedAddress();
-        getAddressSite( doc.address_site_pid, site => {
-          if ( site != null ) {
-            a.setAddressType(smallData.addressTypes.find( t => t.id === site.address_type ));
-          }
-          getAddressLocation( doc.address_detail_pid, location => {
-            a.setLocation( location );
-            newCollection.insert( a, () => {
-              count++;
-              remaining--;
-              if ( count % 500 === 0 ) {
-                process.stdout.clearLine();
-                process.stdout.cursorTo(0);
-                process.stdout.write( `${count} records processed` );
-              }
-            });
-          })
-        });
-      });
-    });
-    stream.on('end', function () {
-      const timer = setInterval(() => {
-        if ( remaining == 0 ) {
-          clearInterval( timer );
-          console.log( `${count >= 500 ? '\n' : ''}Finished simplifying addresses` );
-          callback();
-        }
-      }, 100);
-    });
-  });
-}
+/* Create a simple in memory cache for location localities */
+const locationLocalityCache = {};
 
 /* Returns a location locality from ID */
 getLocationLocality = ( id, callback ) => {
-  const collection = db.collection( 'localityLatLng' );
-  collection.findOne({ locality_pid: id}, (err, doc) => {
-    if ( !doc ) {
-      callback(null);
-      return;
-    }
-
-    callback( new Location( doc ));
-  });
-}
-
-const streetCache = {};
-
-getStreet = ( id, callback) => {
-  if ( !streetCache[id] ) {
-    const collection = db.collection( 'StreetSimple' );
-    collection.findOne({ id }, (err, doc) => {
+  /* Check if the locality location doesn't already exist in the cache */
+  if ( !locationLocalityCache[id] ) {
+    /* Find the localities location in the collection */
+    const collection = db.collection( 'localityLatLng' );
+    collection.findOne({ locality_pid: id}, (err, doc) => {
+      /* If no document was found, return null */
       if ( !doc ) {
         callback(null);
         return;
       }
+
+      /* Store the location in the cache and return the document */
+      locationLocalityCache[id] = new Location( doc );
+      callback( locationLocalityCache[id] );
+    });
+  } else {
+    callback( locationLocalityCache[id] );
+  }
+}
+
+/* Create a simple in memory cache for streets */
+const streetCache = {};
+
+/* Returns a street from ID */
+getStreet = ( id, callback) => {
+  /* Check if the street doesn't already exist in the cache */
+  if ( !streetCache[id] ) {
+    /* Find the street in the collection */
+    const collection = db.collection( 'StreetSimple' );
+    collection.findOne({ id }, (err, doc) => {
+      /* If no document was found, return null */
+      if ( !doc ) {
+        callback(null);
+        return;
+      }
+
+      /* Store the street in the cache and return the document */
       streetCache[id] = doc;
       callback(doc);
     });
@@ -243,29 +239,34 @@ getStreet = ( id, callback) => {
   }
 }
 
+/* Returns the site information for an address by ID */
 getAddressSite = ( id, callback) => {
+  /* Find the site in the collection */
   const collection = db.collection( 'addressSite' );
   collection.findOne({ address_site_pid: id }, (err, doc) => {
+    /* If no document was found return null */
     if ( !doc ) {
       callback(null);
       return;
     }
 
+    /* Return the document */
     callback(doc);
   });
 }
 
+/* Returns the location information for an address by ID */
 getAddressLocation = ( id, callback) => {
+  /* Find the location in the collection */
   const collection = db.collection( 'addressGeocode' );
   collection.findOne({ address_detail_pid: id }, (err, doc) => {
+    /* If no document was found return null */
     if ( !doc ) {
       callback(null);
       return;
     }
 
-    let l = new Location();
-    l.setLat(doc.latitude);
-    l.setLng(doc.longitude);
-    callback(l);
+    /* Return the document */
+    callback( new Location( doc ));
   });
 }

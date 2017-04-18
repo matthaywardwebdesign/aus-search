@@ -1,5 +1,5 @@
 class Address {
-  constructor() {
+  constructor( doc ) {
     this.id = "";
     this.dateCreated = null;
     this.dateRetired = null;
@@ -11,11 +11,23 @@ class Address {
     this.numberFirst = "";
     this.numberLast = "";
     this.street = null;
-    this.locality = null;
     this.postcode = "";
     this.addressType = null;
     this.formattedAddress = "";
     this.location = null;
+
+    if ( doc ) {
+      this.id = doc.address_detail_pid;
+      this.dateCreated = doc.date_created;
+      this.dateRetired = doc.date_retired;
+      this.buildingName = doc.building_name;
+      this.lot = `${doc.lot_number_prefix}${doc.lot_number}${doc.lot_number_suffix}`;
+      this.flat = `${doc.flat_number_prefix}${doc.flat_number}${doc.flat_number_suffix}`;
+      this.level = `${doc.level_number_prefix}${doc.level_number}${doc.level_number_suffix}`;
+      this.numberFirst = `${doc.number_first_prefix}${doc.number_first}${doc.number_first_suffix}`;
+      this.numberLast = `${doc.number_last_prefix}${doc.number_last}${doc.number_last_suffix}`;
+      this.postcode = doc.postcode;
+    }
   }
 
   setID( id ) {
@@ -62,10 +74,6 @@ class Address {
     this.street = street;
   }
 
-  setLocality( locality ) {
-    this.locality = locality;
-  }
-
   setPostcode( postcode ) {
     this.postcode = postcode;
   }
@@ -83,8 +91,8 @@ class Address {
     const flat = ( this.flat ) ? `${this.flat}/` : '';
     const number = ( this.numberLast ) ? `${this.numberFirst} - ${this.numberLast}` : this.numberFirst;
     const street = `${this.street.name} ${this.street.type ? this.street.type.name : ''}`;
-    const locality = this.locality.name;
-    const state = this.locality.state.abbreviation;
+    const locality = this.street.locality.name;
+    const state = this.street.locality.state.abbreviation;
     const postcode = this.postcode;
     this.formattedAddress = `${building}${flat}${number} ${street}, ${locality}, ${state} ${postcode}, Australia`;
   }
