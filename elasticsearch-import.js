@@ -33,11 +33,11 @@ getNext = ( cursor, callback ) => {
 
     if ( batch.length < 1000 ) {
       batch.push( doc );
-      getNext( cursor );
+      getNext( cursor, callback );
     } else {
       insertDocs( batch, () => {
         batch = [];
-        getNext( cursor );
+        getNext( cursor, callback );
       });
     }
   });
