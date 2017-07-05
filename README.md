@@ -5,18 +5,27 @@ A collection of Node JS scripts to create both a MongoDB Database and an Elastic
 using open data provided by [https://data.gov.au](https://data.gov.au/dataset/geocoded-national-address-file-g-naf)
 
 ## Requirements
-To run the provided scripts you will need to have a few things installed on your machine
-- Docker
+To run the provided scripts you will need to have about 30GB of free space and a few things installed on your machine
+- Docker (including docker-compose which is not installed with docker by default on Linux)
 - Node JS with ES6 support
+- wget
+- unzip
 
 ## Getting started
 1. **Start up MongoDB and Elasticsearch**
 
-   Run the following command
+   Run the following command (on Linux you may need to run with sudo)
    ```
-   docker-compose up
+   docker-compose up -d
    ```
-   Running this will pull the Docker images for MongoDB and Elasticsearch and start instances of them both.
+   Running this will pull the Docker images for MongoDB and Elasticsearch and start instances of them both in detached mode.
+   
+   If you are on Linux and get an error message about the vm.max_map_count and fs.file-max, run the following commands
+   ```
+   sudo sysctl -w vm.max_map_count=262144
+   sudo sysctl -w fs.file-max=65536
+   ```
+   You can then re-run the docker-compose command above.
 2. **Install the required NodeJS packages**
    
    Run the following command
@@ -51,7 +60,7 @@ To run the provided scripts you will need to have a few things installed on your
    ```
    node simplify.js
    ```
-   Running this combine and simplify the data imported in step 4
+   Running this will combine and simplify the data imported in step 4
 7. **Create Elasticsearch index**
 
    Run the following command
