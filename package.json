@@ -11,7 +11,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "async": "^2.3.0",
-    "csv-stream": "^0.1.3",
+    "csv-stream": "0.1.3",
     "elasticsearch": "^13.0.0-rc2",
     "indian-ocean": "^2.0.2",
     "mongodb": "^2.2.25",

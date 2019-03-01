@@ -4,7 +4,7 @@ class Location {
     this.coordinates = [];
 
     if ( doc ) {
-      this.coordinates = [doc.longitude, doc.latitude];
+      this.coordinates = [parseFloat(doc.longitude), parseFloat(doc.latitude)];
     }
   }
 }
